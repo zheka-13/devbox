@@ -1,0 +1,10 @@
+version: '3'
+services:
+  apache:
+    build: .
+    container_name: "devbox"
+    ports:
+      - "8081:80"
+    tty: true
+    volumes:
+      - ./:/var/www/html
