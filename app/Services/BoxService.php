@@ -120,11 +120,11 @@ class BoxService
      */
     public function getCutLines(array $boxes, SheetDTO $sheet): array
     {
-        $coords = [];
+        $total_lines = [];
         foreach ($boxes as $box){
             $lines = $box->getCutLines();
             foreach ($lines as $line){
-                if (self::exists($line, $coords)){
+                if (self::exists($line, $total_lines)){
                     continue;
                 }
                 if ($line->getA()->getX() == 0 && $line->getB()->getX() == 0){
@@ -139,10 +139,10 @@ class BoxService
                 if ($line->getA()->getY() == $sheet->length && $line->getB()->getY() == $sheet->length){
                     continue;
                 }
-                $coords[] = $line;
+                $total_lines[] = $line;
             }
         }
-        return $coords;
+        return $total_lines;
     }
 
     /**
@@ -187,6 +187,15 @@ class BoxService
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param Line[] $lines
+     * @return array
+     */
+    public function getProgram(array $lines): array
+    {
+
     }
 
 

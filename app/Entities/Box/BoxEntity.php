@@ -23,6 +23,8 @@ class BoxEntity
      */
     private $params;
 
+    private $layout;
+
     /**
      * @param int $x
      * @param int $y
