@@ -25,9 +25,9 @@ class DrawService
                 imagefilledrectangle($image, $rec->getBottomLeft()->getX(), $rec->getBottomLeft()->getY(), $rec->getTopRight()->getX(), $rec->getTopRight()->getY(), $box_color);
             }
         }
-        ImagePNG($image, base_path()."/public/images/test.png");
+        ImagePNG($image, base_path()."/public/test.png");
         ImageDestroy($image);
-        return "/images/test.png";
+        return "/test.png";
     }
 
     private function getColor($num): array
