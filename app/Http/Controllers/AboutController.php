@@ -48,7 +48,6 @@ class AboutController extends Controller
         $box->depth = (int)$request->input('box_depth');
         $box->height = (int)$request->input('box_height');
         $boxes = $boxService->calculateBoxes($sheet, $box);
-        $coords = $boxService->getCutLines($boxes, $sheet);
         $drawService->createImage($boxes, $sheet);
         $pic = $drawService->createImage($boxes, $sheet);
         $width = $sheet->width;

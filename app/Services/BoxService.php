@@ -47,23 +47,7 @@ class BoxService
                 if ($fit) {
                     $boxes[] = $box;
                 }
-
-               /* try{
-                    $box->guardLimits($sheet->width, $sheet->length);
-                }
-                catch (OutOfLimitsException $e){
-                    continue;
-                }
-                try{
-                    $this->guardOverlap($boxes, $box);
-                }
-                catch (AreaOverlapException $e){
-                    continue;
-                }
-                $boxes[] = $box;
-*/
             }
-
         }
         return $boxes;
     }
@@ -97,113 +81,6 @@ class BoxService
         }
     }
 
-    /**
-     * @param BoxEntity[] $boxes
-     * @param BoxEntity $box
-     * @throws AreaOverlapException
-     */
-   /* public function guardOverlap(array $boxes, BoxEntity $box)
-    {
-        foreach (array_reverse($boxes) as $valid_box){
-            $recs = $valid_box->getRectangles();
-            foreach ($recs as $valid_rec){
-                $check_recs = $box->getRectangles();
-                foreach ($check_recs as $check_rec){
-                    if ($valid_rec->getBottomLeft()->getY() == $check_rec->getBottomLeft()->getY()
-                        && $valid_rec->getTopLeft()->getY() == $check_rec->getTopLeft()->getY()
-                        && $valid_rec->getBottomLeft()->getX() < $check_rec->getBottomLeft()->getX()
-                        && $valid_rec->getBottomRight()->getX() > $check_rec->getBottomRight()->getX()
-                    ){
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getBottomLeft()->getY() == $valid_rec->getBottomLeft()->getY()
-                        && $check_rec->getTopLeft()->getY() == $valid_rec->getTopLeft()->getY()
-                        && $check_rec->getBottomLeft()->getX() < $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getBottomRight()->getX() > $valid_rec->getBottomRight()->getX()
-                    ){
-                        throw new AreaOverlapException();
-                    }
-
-                    if ($valid_rec->getBottomLeft()->getX() == $check_rec->getBottomLeft()->getX()
-                        && $valid_rec->getTopLeft()->getX() == $check_rec->getTopLeft()->getX()
-                        && $valid_rec->getBottomLeft()->getY() < $check_rec->getBottomLeft()->getY()
-                        && $valid_rec->getTopLeft()->getY() > $check_rec->getTopLeft()->getY()
-                    ){
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getBottomLeft()->getX() == $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getTopLeft()->getX() == $valid_rec->getTopLeft()->getX()
-                        && $check_rec->getBottomLeft()->getY() < $valid_rec->getBottomLeft()->getY()
-                        && $check_rec->getTopLeft()->getY() > $valid_rec->getTopLeft()->getY()
-                    ){
-                        throw new AreaOverlapException();
-                    }
-
-                    if ($valid_rec->getBottomLeft()->getX() < $check_rec->getBottomRight()->getX()
-                        && $valid_rec->getBottomRight()->getX() > $check_rec->getBottomRight()->getX()
-                        && $valid_rec->getBottomLeft()->getY() < $check_rec->getTopLeft()->getY()
-                        && $valid_rec->getBottomLeft()->getY() > $check_rec->getBottomLeft()->getY()
-                    ){
-                        throw new AreaOverlapException();
-                    }
-                    if ($valid_rec->getBottomLeft()->getX() == $check_rec->getBottomLeft()->getX()
-                        && $valid_rec->getTopLeft()->getY() > $check_rec->getBottomLeft()->getY()
-                        && $valid_rec->getTopLeft()->getY() < $check_rec->getTopLeft()->getY()){
-                        throw new AreaOverlapException();
-                    }
-                    if ($valid_rec->getBottomLeft()->getX() == $check_rec->getBottomLeft()->getX()
-                        && $valid_rec->getBottomLeft()->getY() < $check_rec->getTopLeft()->getY()
-                        && $valid_rec->getBottomLeft()->getY() > $check_rec->getBottomLeft()->getY() ){
-                        throw new AreaOverlapException();
-                    }
-                    if ($valid_rec->getBottomLeft()->getY() == $check_rec->getBottomLeft()->getY()
-                        && $valid_rec->getBottomLeft()->getX() < $check_rec->getBottomRight()->getX()
-                        && $valid_rec->getBottomLeft()->getX() > $check_rec->getBottomLeft()->getX()){
-                        throw new AreaOverlapException();
-                    }
-                    if ($valid_rec->getBottomLeft()->getY() == $check_rec->getBottomLeft()->getY()
-                        && $valid_rec->getBottomRight()->getX() > $check_rec->getBottomLeft()->getX()
-                        && $valid_rec->getBottomRight()->getX() < $check_rec->getBottomRight()->getX()){
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getBottomRight()->getX() > $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getBottomRight()->getX() < $valid_rec->getBottomRight()->getX()
-                        && $check_rec->getBottomRight()->getY() > $valid_rec->getBottomLeft()->getY()
-                        && $check_rec->getBottomRight()->getY() < $valid_rec->getTopLeft()->getY())
-                    {
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getBottomLeft()->getX() > $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getBottomLeft()->getX() < $valid_rec->getBottomRight()->getX()
-                        && $check_rec->getBottomLeft()->getY() > $valid_rec->getBottomRight()->getY()
-                        && $check_rec->getBottomLeft()->getY() < $valid_rec->getTopRight()->getY())
-                    {
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getTopRight()->getX() > $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getTopRight()->getX() < $valid_rec->getBottomRight()->getX()
-                        && $check_rec->getTopRight()->getY() > $valid_rec->getBottomRight()->getY()
-                        && $check_rec->getTopRight()->getY() < $valid_rec->getTopRight()->getY())
-                    {
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getTopLeft()->getX() > $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getTopLeft()->getX() < $valid_rec->getBottomRight()->getX()
-                        && $check_rec->getTopLeft()->getY() > $valid_rec->getBottomRight()->getY()
-                        && $check_rec->getTopLeft()->getY() < $valid_rec->getTopRight()->getY())
-                    {
-                        throw new AreaOverlapException();
-                    }
-                    if ($check_rec->getBottomLeft()->getX() == $valid_rec->getBottomLeft()->getX()
-                        && $check_rec->getBottomLeft()->getY() == $valid_rec->getBottomLeft()->getY())
-                    {
-                        throw new AreaOverlapException();
-                    }
-                }
-            }
-        }
-    }
-        */
     /**
      * @param BoxEntity[] $boxes
      * @param SheetDTO $sheet

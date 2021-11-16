@@ -6,11 +6,9 @@ use App\Entities\Box\Exceptions\SheetTooSmallException;
 use App\Http\Controllers\DTO\BoxDTO;
 use App\Http\Controllers\DTO\SheetDTO;
 use App\Services\BoxService;
-use App\Services\DrawService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 
 class ApiController extends Controller
 {
@@ -24,18 +22,17 @@ class ApiController extends Controller
     /**
      * @param Request $request
      * @param BoxService $boxService
-     * @param DrawService $drawService
      * @return JsonResponse
      */
-    public function simple_box(Request $request, BoxService $boxService, DrawService $drawService): JsonResponse
+    public function simple_box(Request $request, BoxService $boxService): JsonResponse
     {
         try {
             $this->validate($request, [
-                "sheetSize.w" => "required|integer|min:10",
-                "sheetSize.l" => "required|integer|min:10",
-                "boxSize.w" => "required|integer|min:10",
-                "boxSize.d" => "required|integer|min:10",
-                "boxSize.h" => "required|integer|min:10",
+                "sheetSize.w" => "required|integer|min:1",
+                "sheetSize.l" => "required|integer|min:1",
+                "boxSize.w" => "required|integer|min:1",
+                "boxSize.d" => "required|integer|min:1",
+                "boxSize.h" => "required|integer|min:1",
             ]);
         }
         catch (ValidationException $e){
@@ -62,6 +59,7 @@ class ApiController extends Controller
                 "error" => "Invalid sheet size. Too small for producing at least one box"
             ]);
         }
+
         $boxes = $boxService->calculateBoxes($sheet, $box);
         $lines = $boxService->getCutLines($boxes, $sheet);
         $program = $boxService->getProgram($lines);
