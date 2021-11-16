@@ -286,7 +286,23 @@ class BoxService
      */
     public function getProgram(array $lines): array
     {
-        return [];
+        $program = [
+            ["command" => "START"]
+        ];
+        $current_x = 0;
+        $current_y = 0;
+        foreach ($lines as $line){
+            if ($line->getA()->getX() != $current_x || $line->getA()->getY() != $current_y){
+                $program[] = ["command" => "UP"];
+                $program[] = ["command" => "GOTO", "x" => $line->getA()->getX(), "y" => $line->getA()->getY()];
+            }
+            $program[] = ["command" => "DOWN"];
+            $program[] = ["command" => "GOTO", "x" => $line->getB()->getX(), "y" => $line->getB()->getY()];
+            $current_x = $line->getB()->getX();
+            $current_y = $line->getB()->getY();
+        }
+        $program[] = ["command" => "STOP"];
+        return $program;
     }
 
 

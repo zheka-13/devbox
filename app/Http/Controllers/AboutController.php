@@ -32,7 +32,7 @@ class AboutController extends Controller
      */
     public function calculate(Request $request, BoxService $boxService, DrawService $drawService): View
     {
-
+        $start = microtime(true);
         $this->validate($request, [
             "sheet_width" => "required|integer|min:10",
             "sheet_length" => "required|integer|min:10",
@@ -55,6 +55,7 @@ class AboutController extends Controller
         if ($sheet->width > 400){
             $width = 400;
         }
-        return view('about', ['params' => $request->all(), "pic" => $pic, "width" => $width, "count" => count($boxes)]);
+        $metric = microtime(true) - $start;
+        return view('about', ['metric' => round($metric, 3), 'params' => $request->all(), "pic" => $pic, "width" => $width, "count" => count($boxes)]);
     }
 }

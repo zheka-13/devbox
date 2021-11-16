@@ -29,7 +29,6 @@ class ApiController extends Controller
      */
     public function simple_box(Request $request, BoxService $boxService, DrawService $drawService): JsonResponse
     {
-        $start = microtime(true);
         try {
             $this->validate($request, [
                 "sheetSize.w" => "required|integer|min:10",
@@ -65,8 +64,12 @@ class ApiController extends Controller
         }
         $boxes = $boxService->calculateBoxes($sheet, $box);
         $lines = $boxService->getCutLines($boxes, $sheet);
-        $metric = microtime(true) - $start;
-        return new JsonResponse([]);
+        $program = $boxService->getProgram($lines);
+        return new JsonResponse([
+            "success" => true,
+            "amount" => count($boxes),
+            "program" => $program
+        ]);
     }
 
     /**

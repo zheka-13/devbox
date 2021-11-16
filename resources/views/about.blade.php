@@ -44,6 +44,6 @@
     </form>
     @if (!empty($pic))
         <img style="width: {{ $width }}px;" src="{{ $pic }}"><br><br>
-        BOX COUNT: {{ $count }}
+        BOX COUNT: {{ $count }}, TIME SPENT: {{ $metric }} sec.
     @endif
 </div>
