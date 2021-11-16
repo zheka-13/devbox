@@ -28,7 +28,7 @@ class BoxService
                 $fit = false;
                 while (!$box->isFullTurned()){
                     try{
-                        $box->guardLimits($sheet->width, $sheet->length);
+                        $this->guardLimits($box, $sheet->width, $sheet->length);
                     }
                     catch (OutOfLimitsException $e){
                         $box->turn();
@@ -54,63 +54,29 @@ class BoxService
 
     /**
      * @param BoxEntity[] $boxes
-     * @param BoxEntity $box
-     * @throws AreaOverlapException
-     */
-    public function guardOverlap(array $boxes, BoxEntity $box)
-    {
-        foreach (array_reverse($boxes) as $valid_box) {
-            $recs = $valid_box->getRectangles();
-            foreach ($recs as $valid_rec) {
-                $check_recs = $box->getRectangles();
-                foreach ($check_recs as $check_rec) {
-                    if ($check_rec->getBottomRight()->getX() <= $valid_rec->getBottomLeft()->getX()){
-                        continue;
-                    }
-                    if ($check_rec->getBottomLeft()->getX() >= $valid_rec->getBottomRight()->getX()){
-                        continue;
-                    }
-                    if ($check_rec->getBottomLeft()->getY() >= $valid_rec->getTopLeft()->getY()){
-                        continue;
-                    }if ($check_rec->getTopLeft()->getY() <= $valid_rec->getBottomLeft()->getY()){
-                        continue;
-                    }
-                    throw new AreaOverlapException();
-                }
-            }
-        }
-    }
-
-    /**
-     * @param BoxEntity[] $boxes
      * @param SheetDTO $sheet
      * @return array
      */
-    public function getCutLines(array $boxes, SheetDTO $sheet): array
+    public function getProgram(array $boxes, SheetDTO $sheet): array
     {
-        $total_lines = [];
-        foreach ($boxes as $box){
-            $lines = $box->getCutLines();
-            foreach ($lines as $line){
-                if (self::exists($line, $total_lines)){
-                    continue;
-                }
-                if ($line->getA()->getX() == 0 && $line->getB()->getX() == 0){
-                    continue;
-                }
-                if ($line->getA()->getY() == 0 && $line->getB()->getY() == 0){
-                    continue;
-                }
-                if ($line->getA()->getX() == $sheet->width && $line->getB()->getX() == $sheet->width){
-                    continue;
-                }
-                if ($line->getA()->getY() == $sheet->length && $line->getB()->getY() == $sheet->length){
-                    continue;
-                }
-                $total_lines[] = $line;
+        $lines = $this->getCutLines($boxes, $sheet);
+        $program = [
+            ["command" => "START"]
+        ];
+        $current_x = 0;
+        $current_y = 0;
+        foreach ($lines as $line){
+            if ($line->getA()->getX() != $current_x || $line->getA()->getY() != $current_y){
+                $program[] = ["command" => "UP"];
+                $program[] = ["command" => "GOTO", "x" => $line->getA()->getX(), "y" => $line->getA()->getY()];
             }
+            $program[] = ["command" => "DOWN"];
+            $program[] = ["command" => "GOTO", "x" => $line->getB()->getX(), "y" => $line->getB()->getY()];
+            $current_x = $line->getB()->getX();
+            $current_y = $line->getB()->getY();
         }
-        return $total_lines;
+        $program[] = ["command" => "STOP"];
+        return $program;
     }
 
     /**
@@ -158,29 +124,104 @@ class BoxService
     }
 
     /**
-     * @param Line[] $lines
+     * @param BoxEntity[] $boxes
+     * @param BoxEntity $box
+     * @throws AreaOverlapException
+     */
+    private function guardOverlap(array $boxes, BoxEntity $box)
+    {
+        foreach (array_reverse($boxes) as $valid_box) {
+            $recs = $valid_box->getRectangles();
+            foreach ($recs as $valid_rec) {
+                $check_recs = $box->getRectangles();
+                foreach ($check_recs as $check_rec) {
+                    if ($check_rec->getBottomRight()->getX() <= $valid_rec->getBottomLeft()->getX()){
+                        continue;
+                    }
+                    if ($check_rec->getBottomLeft()->getX() >= $valid_rec->getBottomRight()->getX()){
+                        continue;
+                    }
+                    if ($check_rec->getBottomLeft()->getY() >= $valid_rec->getTopLeft()->getY()){
+                        continue;
+                    }if ($check_rec->getTopLeft()->getY() <= $valid_rec->getBottomLeft()->getY()){
+                        continue;
+                    }
+                    throw new AreaOverlapException();
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws OutOfLimitsException
+     */
+    private function guardLimits(BoxEntity $box, int $limit_x, int $limit_y)
+    {
+        $recs = $box->getRectangles();
+        foreach ($recs as $rec) {
+            if ($rec->getTopRight()->getX() < 0 || $rec->getTopRight()->getY() < 0) {
+                throw new OutOfLimitsException();
+            }
+            if ($rec->getBottomLeft()->getX() < 0 || $rec->getBottomLeft()->getY() < 0) {
+                throw new OutOfLimitsException();
+            }
+            if ($rec->getBottomRight()->getX() < 0 || $rec->getBottomRight()->getY() < 0) {
+                throw new OutOfLimitsException();
+            }
+            if ($rec->getTopLeft()->getX() < 0 || $rec->getTopLeft()->getY() < 0) {
+                throw new OutOfLimitsException();
+            }
+
+            if ($rec->getTopRight()->getX() > $limit_x || $rec->getTopRight()->getY() > $limit_y) {
+                throw new OutOfLimitsException();
+            }
+            if ($rec->getBottomLeft()->getX() > $limit_x || $rec->getBottomLeft()->getY() > $limit_y) {
+                throw new OutOfLimitsException();
+            }
+            if ($rec->getBottomRight()->getX() > $limit_x || $rec->getBottomRight()->getY() > $limit_y) {
+                throw new OutOfLimitsException();
+            }
+            if ($rec->getTopLeft()->getX() > $limit_x || $rec->getTopLeft()->getY() > $limit_y) {
+                throw new OutOfLimitsException();
+            }
+        }
+    }
+
+    /**
+     * @param BoxEntity[] $boxes
+     * @param SheetDTO $sheet
      * @return array
      */
-    public function getProgram(array $lines): array
+    private function getCutLines(array $boxes, SheetDTO $sheet): array
     {
-        $program = [
-            ["command" => "START"]
-        ];
-        $current_x = 0;
-        $current_y = 0;
-        foreach ($lines as $line){
-            if ($line->getA()->getX() != $current_x || $line->getA()->getY() != $current_y){
-                $program[] = ["command" => "UP"];
-                $program[] = ["command" => "GOTO", "x" => $line->getA()->getX(), "y" => $line->getA()->getY()];
+        $total_lines = [];
+        foreach ($boxes as $box){
+            $lines = $box->getCutLines();
+            foreach ($lines as $line){
+                if (self::exists($line, $total_lines)){
+                    continue;
+                }
+                if ($line->getA()->getX() == 0 && $line->getB()->getX() == 0){
+                    continue;
+                }
+                if ($line->getA()->getY() == 0 && $line->getB()->getY() == 0){
+                    continue;
+                }
+                if ($line->getA()->getX() == $sheet->width && $line->getB()->getX() == $sheet->width){
+                    continue;
+                }
+                if ($line->getA()->getY() == $sheet->length && $line->getB()->getY() == $sheet->length){
+                    continue;
+                }
+                $total_lines[] = $line;
             }
-            $program[] = ["command" => "DOWN"];
-            $program[] = ["command" => "GOTO", "x" => $line->getB()->getX(), "y" => $line->getB()->getY()];
-            $current_x = $line->getB()->getX();
-            $current_y = $line->getB()->getY();
         }
-        $program[] = ["command" => "STOP"];
-        return $program;
+        return $total_lines;
     }
+
+
+
+
 
 
 }

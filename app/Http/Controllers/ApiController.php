@@ -59,10 +59,8 @@ class ApiController extends Controller
                 "error" => "Invalid sheet size. Too small for producing at least one box"
             ]);
         }
-
         $boxes = $boxService->calculateBoxes($sheet, $box);
-        $lines = $boxService->getCutLines($boxes, $sheet);
-        $program = $boxService->getProgram($lines);
+        $program = $boxService->getProgram($boxes, $sheet);
         return new JsonResponse([
             "success" => true,
             "amount" => count($boxes),

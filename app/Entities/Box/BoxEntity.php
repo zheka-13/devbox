@@ -2,7 +2,6 @@
 
 namespace App\Entities\Box;
 
-use App\Entities\Box\Exceptions\OutOfLimitsException;
 use App\Http\Controllers\DTO\BoxDTO;
 use App\Services\BoxService;
 
@@ -256,41 +255,6 @@ class BoxEntity
             $this->getTailRectangle(),
             $this->getTail2Rectangle(),
         ];
-    }
-
-    /**
-     * @throws OutOfLimitsException
-     */
-    public function guardLimits(int $limit_x, int $limit_y)
-    {
-        $recs = $this->getRectangles();
-        foreach ($recs as $rec) {
-            if ($rec->getTopRight()->getX() < 0 || $rec->getTopRight()->getY() < 0) {
-                throw new OutOfLimitsException();
-            }
-            if ($rec->getBottomLeft()->getX() < 0 || $rec->getBottomLeft()->getY() < 0) {
-                throw new OutOfLimitsException();
-            }
-            if ($rec->getBottomRight()->getX() < 0 || $rec->getBottomRight()->getY() < 0) {
-                throw new OutOfLimitsException();
-            }
-            if ($rec->getTopLeft()->getX() < 0 || $rec->getTopLeft()->getY() < 0) {
-                throw new OutOfLimitsException();
-            }
-
-            if ($rec->getTopRight()->getX() > $limit_x || $rec->getTopRight()->getY() > $limit_y) {
-                throw new OutOfLimitsException();
-            }
-            if ($rec->getBottomLeft()->getX() > $limit_x || $rec->getBottomLeft()->getY() > $limit_y) {
-                throw new OutOfLimitsException();
-            }
-            if ($rec->getBottomRight()->getX() > $limit_x || $rec->getBottomRight()->getY() > $limit_y) {
-                throw new OutOfLimitsException();
-            }
-            if ($rec->getTopLeft()->getX() > $limit_x || $rec->getTopLeft()->getY() > $limit_y) {
-                throw new OutOfLimitsException();
-            }
-        }
     }
 
     /**
