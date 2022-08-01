@@ -1,0 +1,3 @@
+[submodule "lang/i18n"]
+	path = lang/i18n
+	url = https://github.com/zheka-13/devfinal.git
